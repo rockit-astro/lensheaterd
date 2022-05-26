@@ -1,0 +1,9 @@
+{
+  "daemon": "superwasp_lensheater",
+  "log_name": "lensheaterd",
+  "serial_port": "/dev/lensheater",
+  "serial_baud": 19200,
+  "serial_timeout": 5,
+  "channels": 4,
+  "query_delay": 30
+}

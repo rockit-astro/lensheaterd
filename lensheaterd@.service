@@ -1,0 +1,15 @@
+[Unit]
+Description=Daemon for exposing an attached RKC MA901 temperature controller via Pyro.
+After=syslog.target
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Restart=on-failure
+Type=simple
+ExecStart=/usr/bin/env python3 -u /usr/bin/lensheaterd /etc/lensheaterd/%i.json
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

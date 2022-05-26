@@ -1,0 +1,162 @@
+#!/usr/bin/env python3.6
+#
+# This file is part of lensheaterd.
+#
+# lensheaterd is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# lensheaterd is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with lensheaterd.  If not, see <http://www.gnu.org/licenses/>.
+
+"""Weather station daemon for an attached RKC MA901 temperature controller"""
+
+import argparse
+import datetime
+import threading
+import time
+import Pyro4
+import serial
+from warwick.observatory.common import log
+from warwick.observatory.lensheater import Config
+
+# Set automatically when generating RPM package
+SOFTWARE_VERSION = "UNKNOWN"
+
+
+def is_valid_response(data, code):
+    """Check the packet framing and parity checksum for a 12 byte response message"""
+    if len(data) != 12:
+        return False
+
+    if data[0] != '\x02' or data[1] != code or data[2] != '1' or data[-3] != '\x03' or data[-1] != '\x04':
+        return False
+
+    bcc = 0
+    for i in range(1, 10):
+        bcc ^= ord(data[i])
+
+    if ord(data[-2]) != bcc:
+        return False
+
+    return True
+
+
+class LensHeaterDaemon:
+    """Daemon class that wraps the RS232 interface"""
+    def __init__(self, config):
+        self._config = config
+        self._lock = threading.Lock()
+        self._running = True
+        self._date = datetime.datetime.utcnow()
+        self._temperature = [None for _ in range(self._config.channels)]
+        self._setpoint = [None for _ in range(self._config.channels)]
+        self._port = None
+        self._port_error = False
+
+        runloop = threading.Thread(target=self.run)
+        runloop.daemon = True
+        runloop.start()
+
+    def run(self):
+        """Main run loop"""
+        while self._running:
+            # Initial setup
+            try:
+                self._port = serial.Serial(self._config.serial_port, self._config.serial_baud,
+                                           timeout=self._config.serial_timeout)
+                print('Connected to', self._config.serial_port)
+                prefix = 'Restored' if self._port_error else 'Established'
+                log.info(self._config.log_name, prefix + ' serial connection to controller')
+                self._port_error = False
+            except Exception as exception:
+                print(exception)
+                print('Will retry in 10 seconds...')
+                if not self._port_error:
+                    log.error(self._config.log_name, 'Failed to connect to controller')
+
+                self._port_error = True
+
+                time.sleep(10.)
+                continue
+
+            try:
+                with self._lock:
+                    self._date = datetime.datetime.utcnow()
+                    self._temperature = [None for _ in range(self._config.channels)]
+                    self._setpoint = [None for _ in range(self._config.channels)]
+
+                # Flush any stale state
+                self._port.flushInput()
+                self._port.flushOutput()
+
+                # Main run loop
+                while self._running:
+                    # Loop over channels
+                    current = []
+                    setpoint = []
+                    for i in range(self._config.channels):
+                        self._port.write('\x040{}M1\x05'.format(i).encode('ascii'))
+                        data = self._port.read(12).decode('ascii')
+                        if is_valid_response(data, 'M'):
+                            current.append(float(data[3:-3]))
+                        else:
+                            current.append(None)
+
+                        self._port.write('\x040{}S1\x05'.format(i).encode('ascii'))
+                        data = self._port.read(12).decode('ascii')
+                        if is_valid_response(data, 'S'):
+                            setpoint.append(float(data[3:-3]))
+                        else:
+                            setpoint.append(None)
+
+                    with self._lock:
+                        self._date = datetime.datetime.now()
+                        self._temperature = current
+                        self._setpoint = setpoint
+
+                    time.sleep(self._config.query_delay)
+
+            except Exception as exception:
+                with self._lock:
+                    self._date = datetime.datetime.utcnow()
+                    self._temperature = [None for _ in range(self._config.channels)]
+                    self._setpoint = [None for _ in range(self._config.channels)]
+
+                self._port.close()
+                print(exception)
+                print('Will retry in 10 seconds...')
+                if not self._port_error:
+                    log.error(self._config.log_name, 'Lost serial connection to controller')
+                self._port_error = True
+                time.sleep(10.)
+
+    @Pyro4.expose
+    def report_status(self):
+        """Returns a dictionary containing the current state"""
+        with self._lock:
+            data = {
+                'software_version': SOFTWARE_VERSION,
+                'date': self._date,
+            }
+
+            for i, (temp, setpoint) in enumerate(zip(self._temperature, self._setpoint)):
+                data['temp_' + str(i + 1)] = temp
+                data['set_' + str(i + 1)] = setpoint
+
+            return data
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Lens Heater Server')
+    parser.add_argument('config', help='Path to configuration json file')
+    args = parser.parse_args()
+
+    c = Config(args.config)
+    c.daemon.launch(LensHeaterDaemon(c))
