@@ -17,6 +17,7 @@
 
 """Commandline client for querying the latest measurement from lensheaterd"""
 
+import datetime
 import glob
 import json
 import os
@@ -57,17 +58,17 @@ def print_status(config, _):
     with config.daemon.connect() as lensheater:
         data = lensheater.report_status()
 
-    print('Data received \033[1m{}\033[0m:'.format(data['date']))
+    date = datetime.datetime.strptime(data['date'], '%Y-%m-%dT%H:%M:%SZ')
+    print(f'Data received {TFmt.Bold}{date}{TFmt.Clear}:')
     for i in range(config.channels):
         channel = str(i + 1)
         temp = data.get('temp_' + channel, None)
-        temp_label = TFmt.Red + 'UNKNOWN' if temp is None else '{:.1f}\u00B0C'.format(temp)
+        temp_label = TFmt.Red + 'UNKNOWN' if temp is None else f'{temp:.1f}\u00B0C'
 
         setpoint = data.get('set_' + channel, None)
-        setpoint_label = TFmt.Red + 'UNKNOWN' if setpoint is None else '{:.1f}\u00B0C'.format(setpoint)
+        setpoint_label = TFmt.Red + 'UNKNOWN' if setpoint is None else f'{setpoint:.1f}\u00B0C'
 
-        print('   Lens ' + channel + ': ' + TFmt.Bold + temp_label + TFmt.Clear + ' / ' + TFmt.Bold + setpoint_label +
-              TFmt.Clear)
+        print(f'   Lens {channel}: {TFmt.Bold}{temp_label}{TFmt.Clear} / {TFmt.Bold}{setpoint_label}{TFmt.Clear}')
 
     return 0
 
@@ -80,9 +81,10 @@ def print_json(config, _):
     print(json.dumps(latest or {}))
     return 0
 
+
 def print_usage():
     """Prints the utility help"""
-    print('usage: {} <command> [<args>]'.format(SCRIPT_NAME))
+    print(f'usage: {SCRIPT_NAME} <command> [<args>]')
     print()
     print('   status      print a human-readable summary of the lens temperatures')
     print('   json        print a machine-readable summary of the lens temperatures')

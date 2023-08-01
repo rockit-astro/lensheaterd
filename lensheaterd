@@ -102,14 +102,14 @@ class LensHeaterDaemon:
                     current = []
                     setpoint = []
                     for i in range(self._config.channels):
-                        self._port.write('\x040{}M1\x05'.format(i).encode('ascii'))
+                        self._port.write(f'\x040{i}M1\x05'.encode('ascii'))
                         data = self._port.read(12).decode('ascii')
                         if is_valid_response(data, 'M'):
                             current.append(float(data[3:-3]))
                         else:
                             current.append(None)
 
-                        self._port.write('\x040{}S1\x05'.format(i).encode('ascii'))
+                        self._port.write(f'\x040{i}S1\x05'.encode('ascii'))
                         data = self._port.read(12).decode('ascii')
                         if is_valid_response(data, 'S'):
                             setpoint.append(float(data[3:-3]))
