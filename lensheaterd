@@ -1,21 +1,21 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 #
-# This file is part of lensheaterd.
+# This file is part of the Robotic Observatory Control Kit (rockit)
 #
-# lensheaterd is free software: you can redistribute it and/or modify
+# rockit is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# lensheaterd is distributed in the hope that it will be useful,
+# rockit is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with lensheaterd.  If not, see <http://www.gnu.org/licenses/>.
+# along with rockit.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Weather station daemon for an attached RKC MA901 temperature controller"""
+"""Daemon for an attached RKC MA901 temperature controller"""
 
 import argparse
 import datetime
@@ -23,11 +23,8 @@ import threading
 import time
 import Pyro4
 import serial
-from warwick.observatory.common import log
-from warwick.observatory.lensheater import Config
-
-# Set automatically when generating RPM package
-SOFTWARE_VERSION = "UNKNOWN"
+from rockit.common import log
+from rockit.lensheater import Config
 
 
 def is_valid_response(data, code):
@@ -142,7 +139,6 @@ class LensHeaterDaemon:
         """Returns a dictionary containing the current state"""
         with self._lock:
             data = {
-                'software_version': SOFTWARE_VERSION,
                 'date': self._date,
             }
 
