@@ -139,7 +139,7 @@ class LensHeaterDaemon:
         """Returns a dictionary containing the current state"""
         with self._lock:
             data = {
-                'date': self._date,
+                'date': self._date.strftime('%Y-%m-%dT%H:%M:%SZ')
             }
 
             for i, (temp, setpoint) in enumerate(zip(self._temperature, self._setpoint)):
