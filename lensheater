@@ -23,7 +23,7 @@ import json
 import os
 import sys
 import Pyro4
-from rockit.common import TFmt
+from rockit.common import print
 from rockit.lensheater import Config
 
 SCRIPT_NAME = os.path.basename(sys.argv[0])
@@ -59,16 +59,16 @@ def print_status(config, _):
         data = lensheater.report_status()
 
     date = datetime.datetime.strptime(data['date'], '%Y-%m-%dT%H:%M:%SZ')
-    print(f'Data received {TFmt.Bold}{date}{TFmt.Clear}:')
+    print(f'Data received [b]{date}[/b]:')
     for i in range(config.channels):
         channel = str(i + 1)
         temp = data.get('temp_' + channel, None)
-        temp_label = TFmt.Red + 'UNKNOWN' if temp is None else f'{temp:.1f}\u00B0C'
+        temp_label = '[red]UNKNOWN[/red]' if temp is None else f'{temp:.1f}\u00B0C'
 
         setpoint = data.get('set_' + channel, None)
-        setpoint_label = TFmt.Red + 'UNKNOWN' if setpoint is None else f'{setpoint:.1f}\u00B0C'
+        setpoint_label = '[red]UNKNOWN[/red]' if setpoint is None else f'{setpoint:.1f}\u00B0C'
 
-        print(f'   Lens {channel}: {TFmt.Bold}{temp_label}{TFmt.Clear} / {TFmt.Bold}{setpoint_label}{TFmt.Clear}')
+        print(f'   Lens {channel}: [b]{temp_label}[/b] / [b]{setpoint_label}[/b]')
 
     return 0
 
@@ -84,7 +84,7 @@ def print_json(config, _):
 
 def print_usage():
     """Prints the utility help"""
-    print(f'usage: {SCRIPT_NAME} <command> [<args>]')
+    print(f'usage: {SCRIPT_NAME} <command>')
     print()
     print('   status      print a human-readable summary of the lens temperatures')
     print('   json        print a machine-readable summary of the lens temperatures')
