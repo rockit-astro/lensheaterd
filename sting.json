@@ -1,5 +1,5 @@
 {
-  "daemon": "superwasp_lensheater",
+  "daemon": "sting_lensheater",
   "log_name": "lensheaterd",
   "serial_port": "/dev/lensheater",
   "serial_baud": 19200,

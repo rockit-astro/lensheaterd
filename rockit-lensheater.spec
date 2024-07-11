@@ -21,8 +21,8 @@ mkdir -p %{buildroot}%{_udevrulesdir}
 %{__install} %{_sourcedir}/lensheaterd@.service %{buildroot}%{_unitdir}
 %{__install} %{_sourcedir}/completion/lensheater %{buildroot}/etc/bash_completion.d
 
-%{__install} %{_sourcedir}/superwasp.json %{buildroot}%{_sysconfdir}/lensheaterd/
-%{__install} %{_sourcedir}/10-superwasp-lensheater.rules %{buildroot}%{_udevrulesdir}
+%{__install} %{_sourcedir}/sting.json %{buildroot}%{_sysconfdir}/lensheaterd/
+%{__install} %{_sourcedir}/10-sting-lensheater.rules %{buildroot}%{_udevrulesdir}
 
 %package server
 Summary:  Lens heater server
@@ -47,14 +47,14 @@ Requires: python3-rockit-lensheater
 %{_bindir}/lensheater
 /etc/bash_completion.d/lensheater
 
-%package data-superwasp
-Summary: Lens heater data for SuperWASP
+%package data-sting
+Summary: Lens heater configuration for STING
 Group:   Unspecified
-%description data-superwasp
+%description data-sting
 
-%files data-superwasp
+%files data-sting
 %defattr(0644,root,root,-)
-%{_udevrulesdir}/10-superwasp-lensheater.rules
-%{_sysconfdir}/lensheaterd/superwasp.json
+%{_udevrulesdir}/10-sting-lensheater.rules
+%{_sysconfdir}/lensheaterd/sting.json
 
 %changelog

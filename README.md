@@ -1,9 +1,9 @@
-## SuperWASP Lens Heater daemon
+## STING Lens Heater daemon
 
 `lensheaterd` wraps a RKC MA901 temperature controller attached via a USB-RS232 adaptor and
 makes the latest measurement available for other services via Pyro.
 
-`lensheater` is a commandline utility that reports the latest data from the SuperWASP lensheater.
+`lensheater` is a commandline utility that reports the latest data from the STING lensheater.
 
 
 ### Configuration
@@ -14,7 +14,7 @@ A configuration file is specified when launching the server, and the `lensheater
 The configuration options are:
 ```python
 {
-  "daemon": "superwasp_lensheater", # Run the server as this daemon. Daemon types are registered in `rockit.common.daemons`.
+  "daemon": "sting_lensheater", # Run the server as this daemon. Daemon types are registered in `rockit.common.daemons`.
   "log_name": "lensheaterd",        # The name to use when writing messages to the observatory log.
   "serial_port": "/dev/lensheater", # The serial port device to use
   "serial_baud": 19200,             # The serial baud rate to use
@@ -28,17 +28,17 @@ The configuration options are:
 
 The automated packaging scripts will push 6 RPM packages to the observatory package repository:
 
-| Package                          | Description                                                                                     |
-|----------------------------------|-------------------------------------------------------------------------------------------------|
-| rockit-lensheater-server         | Contains the `lensheaterd` server and systemd service file.                                     |
-| rockit-lensheater-client         | Contains the `lensheater` commandline utility for querying the lens heater server. |
-| python3-rockit-lensheater        | Contains the python module with shared code.                                                    |
-| rockit-lensheater-data-superwasp | Contains the json configuration and udev rules for SuperWASP                                    |
+| Package                     | Description                                                                        |
+|-----------------------------|------------------------------------------------------------------------------------|
+| rockit-lensheater-server    | Contains the `lensheaterd` server and systemd service file.                        |
+| rockit-lensheater-client    | Contains the `lensheater` commandline utility for querying the lens heater server. |
+| python3-rockit-lensheater   | Contains the python module with shared code.                                       |
+| rockit-lensheater-data-stng | Contains the json configuration and udev rules for STING                           |
 
 After installing packages, the systemd service should be enabled:
 
 ```
-sudo systemctl enable --now lensheaterd@superwasp
+sudo systemctl enable --now lensheaterd@sting
 ```
 
 Now open a port in the firewall:
