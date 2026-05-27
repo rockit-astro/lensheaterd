@@ -51,7 +51,7 @@ class LensHeaterDaemon:
         self._config = config
         self._lock = threading.Lock()
         self._running = True
-        self._date = datetime.datetime.utcnow()
+        self._date = datetime.datetime.now(datetime.timezone.utc)
         self._temperature = [None for _ in range(self._config.channels)]
         self._setpoint = [None for _ in range(self._config.channels)]
         self._port = None
@@ -85,7 +85,7 @@ class LensHeaterDaemon:
 
             try:
                 with self._lock:
-                    self._date = datetime.datetime.utcnow()
+                    self._date = datetime.datetime.now(datetime.timezone.utc)
                     self._temperature = [None for _ in range(self._config.channels)]
                     self._setpoint = [None for _ in range(self._config.channels)]
 
@@ -122,7 +122,7 @@ class LensHeaterDaemon:
 
             except Exception as exception:
                 with self._lock:
-                    self._date = datetime.datetime.utcnow()
+                    self._date = datetime.datetime.now(datetime.timezone.utc)
                     self._temperature = [None for _ in range(self._config.channels)]
                     self._setpoint = [None for _ in range(self._config.channels)]
 
