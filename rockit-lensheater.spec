@@ -1,6 +1,6 @@
 Name:      rockit-lensheater
 Version:   %{_version}
-Release:   1
+Release:   1%{dist}
 Summary:   Lens heater controller
 Url:       https://github.com/rockit-astro/lensheaterd
 License:   GPL-3.0
